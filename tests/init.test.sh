@@ -61,7 +61,7 @@ check "apply writes them" "\
 .neoplanner/config.toml
 CLAUDE.md
 README.md
-openspec/config.yaml" "$(cd "$p" && find . -path ./.git -prune -o -type f -print | sed 's|^\./||' | sort)"
+openspec/config.yaml" "$(cd "$p" && find . -path ./.git -prune -o -type f -print | sed 's|^\./||' | LC_ALL=C sort)"
 check "the settings say committed" 'mode = "committed"' "$(grep '^mode' "$p/.neoplanner/config.toml")"
 check "the section points at openspec/" "yes" \
   "$(grep -q '`openspec/`, in this repository' "$p/CLAUDE.md" && echo yes)"

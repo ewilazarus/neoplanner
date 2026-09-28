@@ -1,0 +1,26 @@
+{
+  "description": "Keep OpenSpec planning behind neoplanner:agent: give it its rules, check every request and reply against its contract, let everyone read the artifacts but only the agent write them, keep the agent out of the code, validate each delta spec it writes, and remind Claude to report progress before it stops.",
+  "hooks": {
+    "SubagentStart": [
+      {"hooks": [{"type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/neoplanner\" hook", "timeout": 10}]}
+    ],
+    "SubagentStop": [
+      {"hooks": [{"type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/neoplanner\" hook", "timeout": 10}]}
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|Edit|Write|MultiEdit|Agent|SendMessage|Bash",
+        "hooks": [{"type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/neoplanner\" hook", "timeout": 10}]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [{"type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/neoplanner\" hook", "timeout": 30}]
+      }
+    ],
+    "Stop": [
+      {"hooks": [{"type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/neoplanner\" hook", "timeout": 10}]}
+    ]
+  }
+}

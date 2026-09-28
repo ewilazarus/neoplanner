@@ -1,0 +1,15 @@
+{
+  "name": "neoplanner",
+  "description": "neoplanner: a project's OpenSpec planning, kept by one agent.",
+  "owner": {
+    "name": "ewilazarus"
+  },
+  "plugins": [
+    {
+      "name": "neoplanner",
+      "source": "./",
+      "description": "Keeps a project's OpenSpec planning behind one agent, neoplanner:agent, so the main conversation's context stays free for code. You run the wrapped OpenSpec commands (propose, explore, update, sync, archive) and they run inside the agent; Claude sends it JSON requests to plan, revise and report progress, checked by hooks against a contract, and reads the artifacts it writes. The specs live in the repo's openspec/ folder, or in stealth mode in an OpenSpec store outside it. Requires the openspec CLI.",
+      "version": "0.1.0"
+    }
+  ]
+}

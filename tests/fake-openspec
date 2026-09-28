@@ -1,0 +1,45 @@
+#!/bin/sh
+# A stand-in for OpenSpec's CLI, for the tests: just enough of `--version`, `init`,
+# `store setup|list`, `list` and `validate`. It logs every call to $FAKE_OPENSPEC_LOG, keeps
+# its store registry in $FAKE_OPENSPEC_STATE/stores, and answers `list` and `validate` from
+# $FAKE_OPENSPEC_LIST and $FAKE_OPENSPEC_VALIDATE when they're set.
+
+set -eu
+state=${FAKE_OPENSPEC_STATE:?}
+mkdir -p "$state"
+touch "$state/stores"
+[ -z "${FAKE_OPENSPEC_LOG:-}" ] || echo "$*" >>"$FAKE_OPENSPEC_LOG"
+
+case "$*" in
+  --version) echo "${FAKE_OPENSPEC_VERSION:-1.6.0}" ;;
+  "init --tools none "*)
+    root=$4
+    mkdir -p "$root/openspec/specs" "$root/openspec/changes/archive"
+    printf 'schema: spec-driven\n' >"$root/openspec/config.yaml" ;;
+  "store list --json")
+    printf '{"stores": ['
+    sep=""
+    while read -r id path; do
+      printf '%s{"id": "%s", "root": "%s"}' "$sep" "$id" "$path"
+      sep=", "
+    done <"$state/stores"
+    printf '], "status": []}\n' ;;
+  "store setup "*)
+    id=$3 path=$5
+    mkdir -p "$path/openspec/specs" "$path/openspec/changes/archive" "$path/.openspec-store"
+    printf 'schema: spec-driven\n' >"$path/openspec/config.yaml"
+    printf 'version: 1\nid: %s\n' "$id" >"$path/.openspec-store/store.yaml"
+    git -C "$path" init -q
+    git -C "$path" add -A
+    git -C "$path" -c user.name=t -c user.email=t@t commit -qm "Set up the store"
+    echo "$id $path" >>"$state/stores"
+    echo '{}' ;;
+  "list --json"*)
+    empty='{"changes": []}'
+    echo "${FAKE_OPENSPEC_LIST:-$empty}" ;;
+  validate*)
+    valid='{"items": [{"id": "x", "valid": true, "issues": []}]}'
+    echo "${FAKE_OPENSPEC_VALIDATE:-$valid}"
+    [ -z "${FAKE_OPENSPEC_VALIDATE:-}" ] || exit 1 ;;
+  *) echo "openspec $*" ;;
+esac
